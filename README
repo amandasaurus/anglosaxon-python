@@ -1,0 +1,1 @@
+anglosaxon.py -s changeset -o "changeset id=" -v id changesets-latest.osm
