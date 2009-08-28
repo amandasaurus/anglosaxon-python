@@ -28,6 +28,9 @@ def parse_options(options):
             elif curr_end is not None:
                 end_functions[curr_end] = current_output_options
             curr = options.pop(0)
+            if '/' in curr:
+                curr = tuple(curr.split("/"))
+
             current_output_options = []
             if option == '-s':
                 curr_start = curr
