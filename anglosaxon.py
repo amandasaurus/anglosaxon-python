@@ -64,6 +64,8 @@ def parse_options(options):
 
 def class_for_function(start_functions, end_functions):
     class AngloSaxonContentHandler(xml.sax.ContentHandler):
+        stack = []
+
         def output(self, name, attrs, function_dict):
             if name in function_dict:
                 output = ""
@@ -81,10 +83,39 @@ def class_for_function(start_functions, end_functions):
                         output += value
                 sys.stdout.write(output.encode("utf8"))
 
+            for item in function_dict:
+                if isinstance(item, basestring):
+                    continue
+                length = len(item)
+                if length > len(self.stack):
+                    continue
+                possible_match = self.stack[-length:]
+                # we can't go possible_match == item, because possible_match is
+                # a list of unicode strings and item might be a tuple of
+                # strings
+                if all(possible_match[i] == item[i] for i in range(length)):
+                    output = ""
+                    for option in function_dict[item]:
+                        if len(option) == 2:
+                            type, value = option
+                        elif len(option) == 3:
+                            type, value, default_value = option
+
+                        if type == '-v':
+                            output += attrs[value]
+                        elif type == '-V':
+                            output += attrs.get(value, default_value)
+                        elif type == '-o':
+                            output += value
+                    sys.stdout.write(output.encode("utf8"))
+
         def startElement(self, name, attrs):
+            self.stack.append(name)
             self.output(name, attrs, start_functions)
 
         def endElement(self, name):
+            assert self.stack[-1] == name
+            self.stack.pop()
             self.output(name, None, end_functions)
 
     return AngloSaxonContentHandler
