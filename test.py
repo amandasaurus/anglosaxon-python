@@ -16,6 +16,8 @@ class OptionsKnownValues(unittest.TestCase):
             {'mynode': [('-o', 'node('), ('-o', 'id='), ('-v', 'id'), ('-o', '\n')]}, 
             {'mynode': [('-o', ')node'), ('-o', '\n')]} ),
 
+        ("-s parent/child -o gotaparentchild --nl", {('parent', 'child'): [('-o', 'gotaparentchild'), ('-o', '\n')]}, {}),
+
     )
 
     def testKnownValues(self):

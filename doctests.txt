@@ -76,3 +76,18 @@
   node(NULL)
   >>> parse(cls, StringIO("<myxml><node></node><node id=\"b\"></node></myxml>")) 
   node(NULL)node(b)
+
+  >>> cls = class_for_function(*parse_options("-s parent/child -o gotaparentchild --nl".split(" ")))
+  
+  >>> parse(cls, StringIO("<parent></parent>")) 
+  >>> parse(cls, StringIO("<child></child>")) 
+  >>> parse(cls, StringIO("<parent><child></child></parent>")) 
+  gotaparentchild
+  >>> parse(cls, StringIO("<myxml><parent></parent><child></child>")) 
+  >>> parse(cls, StringIO("<myxml><child></child><parent></parent></myxml>")) 
+  >>> parse(cls, StringIO("<parent><child><child></child></child></parent>")) 
+  gotaparentchild
+  >>> parse(cls, StringIO("<parent><child><parent><child></child></parent></child>")) 
+  gotaparentchild
+  gotaparentchild
+
