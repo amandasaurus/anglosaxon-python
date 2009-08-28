@@ -64,7 +64,8 @@ def parse_options(options):
 
 def class_for_function(start_functions, end_functions):
     class AngloSaxonContentHandler(xml.sax.ContentHandler):
-        stack = []
+        node_stack = []
+        attributes_stack = []
 
         def output(self, name, attrs, function_dict):
             if name in function_dict:
@@ -87,9 +88,9 @@ def class_for_function(start_functions, end_functions):
                 if isinstance(item, basestring):
                     continue
                 length = len(item)
-                if length > len(self.stack):
+                if length > len(self.node_stack):
                     continue
-                possible_match = self.stack[-length:]
+                possible_match = self.node_stack[-length:]
                 # we can't go possible_match == item, because possible_match is
                 # a list of unicode strings and item might be a tuple of
                 # strings
@@ -100,22 +101,41 @@ def class_for_function(start_functions, end_functions):
                             type, value = option
                         elif len(option) == 3:
                             type, value, default_value = option
+                        
+                        if type == '-o':
+                            output += value
+                        elif type in ('-v', '-V'):
+                            attrs_dict = None
+                            parts = value.split("/")
+                            if len(parts) == 1:
+                                attrs_dict = attrs
+                            else:
+                                assert all(x == '..' for x in parts[:-1]) and parts[-1] != '..', "Malformed traverse %s" % value
+                                assert len(parts) <= len(self.attributes_stack), "Can't go up %d levels when we're only %d in" % (len(parts), len(attributes_stack))
+                                attrs_dict = self.attributes_stack[len(parts) - 2]
+                                value = parts[-1]
 
-                        if type == '-v':
-                            output += attrs[value]
-                        elif type == '-V':
-                            output += attrs.get(value, default_value)
+
+                            if type == '-v':
+                                output += attrs_dict[value]
+                            elif type == '-V':
+                                output += attrs_dict.get(value, default_value)
+                            
                         elif type == '-o':
                             output += value
                     sys.stdout.write(output.encode("utf8"))
 
         def startElement(self, name, attrs):
-            self.stack.append(name)
+            self.node_stack.append(name)
+            self.attributes_stack.append(attrs)
+            assert len(self.node_stack) == len(self.node_stack)
             self.output(name, attrs, start_functions)
 
         def endElement(self, name):
-            assert self.stack[-1] == name
-            self.stack.pop()
+            assert self.node_stack[-1] == name
+            self.node_stack.pop()
+            self.attributes_stack.pop()
+            assert len(self.node_stack) == len(self.node_stack)
             self.output(name, None, end_functions)
 
     return AngloSaxonContentHandler

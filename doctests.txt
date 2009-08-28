@@ -83,11 +83,37 @@
   >>> parse(cls, StringIO("<child></child>")) 
   >>> parse(cls, StringIO("<parent><child></child></parent>")) 
   gotaparentchild
-  >>> parse(cls, StringIO("<myxml><parent></parent><child></child>")) 
+  >>> parse(cls, StringIO("<myxml><parent></parent><child></child></myxml>")) 
   >>> parse(cls, StringIO("<myxml><child></child><parent></parent></myxml>")) 
   >>> parse(cls, StringIO("<parent><child><child></child></child></parent>")) 
   gotaparentchild
-  >>> parse(cls, StringIO("<parent><child><parent><child></child></parent></child>")) 
+  >>> parse(cls, StringIO("<parent><child><parent><child></child></parent></child></parent>")) 
   gotaparentchild
   gotaparentchild
 
+  >>> cls = class_for_function(*parse_options("-s parent/child -o child_id= -v id --nl".split(" ")))
+  
+  >>> parse(cls, StringIO("<parent></parent>")) 
+  >>> parse(cls, StringIO("<child></child>")) 
+  >>> parse(cls, StringIO("<parent><child id=\"a\"></child></parent>")) 
+  child_id=a
+  >>> parse(cls, StringIO("<myxml><parent></parent><child id=\"b\"></child></myxml>")) 
+  >>> parse(cls, StringIO("<myxml><child id=\"c\"></child><parent></parent></myxml>")) 
+  >>> parse(cls, StringIO("<parent><child id=\"d\"><child id=\"c\"></child></child></parent>")) 
+  child_id=d
+  >>> parse(cls, StringIO("<parent><child id=\"e\"><parent><child id=\"f\"></child></parent></child></parent>")) 
+  child_id=e
+  child_id=f
+
+  >>> cls = class_for_function(*parse_options("-s parent/child/subchild -o gotasubchild --nl".split(" ")))
+  
+  >>> parse(cls, StringIO("<myxml><parent></parent></myxml>"))
+  >>> parse(cls, StringIO("<myxml><parent><child></child></parent></myxml>"))
+  >>> parse(cls, StringIO("<myxml><parent><child><subchild></subchild></child></parent></myxml>"))
+  gotasubchild
+  >>> parse(cls, StringIO("<myxml><notparent><child><subchild></subchild></child></notparent></myxml>"))
+
+  >>> cls = class_for_function(*parse_options("-s parent/child -o child_id= -v id -o _parent_id= -v ../id --nl".split(" ")))
+  
+  >>> parse(cls, StringIO("<parent id=\"a\"><child id=\"b\"></child></parent>")) 
+  child_id=b_parent_id=a
