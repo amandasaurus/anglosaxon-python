@@ -1,0 +1,78 @@
+  >>> from StringIO import StringIO
+  >>> from anglosaxon import *
+
+  >>> cls = class_for_function(*parse_options("-s node -o foo".split(" ")))
+
+  >>> parse(cls, StringIO("<node></node>")) 
+  foo
+  >>> parse(cls, StringIO("<myxml><node></node><node></node></myxml>")) 
+  foofoo
+  >>> parse(cls, StringIO("<myxml><node><node></node></node></myxml>")) 
+  foofoo
+  >>> parse(cls, StringIO("<myxml></myxml>")) 
+
+  >>> cls = class_for_function(*parse_options("-s node -o node( -v id -o )".split(" ")))
+
+  >>> parse(cls, StringIO("<node id=\"x\"></node>")) 
+  node(x)
+  >>> parse(cls, StringIO("<myxml><node id=\"a\"></node><node id=\"b\"></node></myxml>")) 
+  node(a)node(b)
+
+  >>> cls = class_for_function(*parse_options("-s node -o node( -e node -o ) ".split(" ")))
+
+  >>> parse(cls, StringIO("<node></node>")) 
+  node()
+  >>> parse(cls, StringIO("<myxml><node></node><node></node></myxml>")) 
+  node()node()
+  >>> parse(cls, StringIO("<myxml><node><node></node></node></myxml>")) 
+  node(node())
+  >>> parse(cls, StringIO("<myxml></myxml>")) 
+
+  >>> cls = class_for_function(*parse_options("-s node -o node( -s child -o child(id= -v id ".split(" ")))
+
+  >>> parse(cls, StringIO("<myxml><node></node><node></node></myxml>")) 
+  node(node(
+  >>> parse(cls, StringIO("<myxml><node><node></node></node></myxml>")) 
+  node(node(
+  >>> parse(cls, StringIO("<myxml></myxml>")) 
+  >>> parse(cls, StringIO("<myxml><node></node><child id=\"x\"></child></myxml>")) 
+  node(child(id=x
+  >>> parse(cls, StringIO("<myxml><node><child id=\"y\"></child></node></myxml>")) 
+  node(child(id=y
+  >>> parse(cls, StringIO("<myxml></myxml>")) 
+
+
+  >>> cls = class_for_function(*parse_options("-s node -o nodestart --nl -s child -o childstart -o id= -v id --nl -e node -o nodeend --nl -e child -o childend --nl ".split(" ")))
+  >>> parse(cls, StringIO("<myxml><node></node><node></node></myxml>")) 
+  nodestart
+  nodeend
+  nodestart
+  nodeend
+  >>> parse(cls, StringIO("<myxml><node><node></node></node></myxml>")) 
+  nodestart
+  nodestart
+  nodeend
+  nodeend
+  >>> parse(cls, StringIO("<myxml></myxml>")) 
+  >>> parse(cls, StringIO("<myxml><node></node><child id=\"x\"></child></myxml>")) 
+  nodestart
+  nodeend
+  childstartid=x
+  childend
+  >>> parse(cls, StringIO("<myxml><node><child id=\"y\"></child></node></myxml>")) 
+  nodestart
+  childstartid=y
+  childend
+  nodeend
+  >>> parse(cls, StringIO("<myxml></myxml>")) 
+
+  >>> cls = class_for_function(*parse_options("-s node -o node( -V id NULL -o )".split(" ")))
+
+  >>> parse(cls, StringIO("<node id=\"x\"></node>")) 
+  node(x)
+  >>> parse(cls, StringIO("<myxml><node id=\"a\"></node><node id=\"b\"></node></myxml>")) 
+  node(a)node(b)
+  >>> parse(cls, StringIO("<node></node>")) 
+  node(NULL)
+  >>> parse(cls, StringIO("<myxml><node></node><node id=\"b\"></node></myxml>")) 
+  node(NULL)node(b)
