@@ -5,6 +5,12 @@ import pprint
 import xml.sax
 
 
+class AngloSaxonException(Exception):
+    pass
+
+class AngloSaxonExceptionInvalidOptions(AngloSaxonException):
+    pass
+
 
 def parse_options(options):
     curr_start = None
@@ -15,7 +21,8 @@ def parse_options(options):
     while options:
         option = options.pop(0)
         if option in ('-s', '-e'):
-            assert len(option) > 0, "Option "+option+" requires argument"
+            if len(options) == 0:
+                raise AngloSaxonExceptionInvalidOptions, "Option "+option+" requires argument"
             if curr_start is not None:
                 start_functions[curr_start] = current_output_options
             elif curr_end is not None:
@@ -31,13 +38,16 @@ def parse_options(options):
         elif option == '--nl':
             current_output_options.append(('-o', "\n"))
         elif option in ['-o', '-v', '-V']:
-            assert (curr_start is not None) or (curr_end is not None), "Attempting to use -o or -v before -s/-e"
-            assert len(option) > 0, "Option "+option+" requires an argument"
+            if not ( (curr_start is not None) or (curr_end is not None) ):
+                raise AngloSaxonExceptionInvalidOptions, "Attempting to use "+option+" before -s/-e"
+            if not ( len(options) > 0 ):
+                raise AngloSaxonExceptionInvalidOptions, "Option "+option+" requires an argument"
             value = options.pop(0)
             if option in ['-o', '-v']:
                 current_output_options.append((option, value))
             elif option == '-V':
-                assert len(option) > 0, "Option -V without a default option"
+                if not ( len(options) > 0 ):
+                    raise AngloSaxonExceptionInvalidOptions, "Option -V without a default option"
                 default_value = options.pop(0)
                 current_output_options.append((option, value, default_value))
 
