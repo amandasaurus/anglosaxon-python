@@ -112,7 +112,7 @@ def class_for_function(start_functions, end_functions):
                             else:
                                 assert all(x == '..' for x in parts[:-1]) and parts[-1] != '..', "Malformed traverse %s" % value
                                 assert len(parts) <= len(self.attributes_stack), "Can't go up %d levels when we're only %d in" % (len(parts), len(attributes_stack))
-                                attrs_dict = self.attributes_stack[len(parts) - 2]
+                                attrs_dict = self.attributes_stack[-len(parts)]
                                 value = parts[-1]
 
 

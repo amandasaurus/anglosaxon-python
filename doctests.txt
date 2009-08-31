@@ -117,3 +117,10 @@
   
   >>> parse(cls, StringIO("<parent id=\"a\"><child id=\"b\"></child></parent>")) 
   child_id=b_parent_id=a
+  >>> parse(cls, StringIO("<grandparent id=\"z\"><parent id=\"a\"><child id=\"b\"></child></parent></grandparent>")) 
+  child_id=b_parent_id=a
+
+  >>> cls = class_for_function(*parse_options("-s parent/child -o child_id= -v id -o _grandparent_id= -v ../../id --nl".split(" ")))
+
+  >>> parse(cls, StringIO("<grandparent id=\"z\"><parent id=\"a\"><child id=\"b\"></child></parent></grandparent>")) 
+  child_id=b_grandparent_id=z
