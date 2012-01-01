@@ -69,7 +69,7 @@ def class_for_function(start_functions, end_functions):
 
         def output(self, name, attrs, function_dict):
             if name in function_dict:
-                output = ""
+                output = []
                 for option in function_dict[name]:
                     if len(option) == 2:
                         type, value = option
@@ -77,12 +77,12 @@ def class_for_function(start_functions, end_functions):
                         type, value, default_value = option
 
                     if type == '-v':
-                        output += attrs[value]
+                        output.append(attrs[value])
                     elif type == '-V':
-                        output += attrs.get(value, default_value)
+                        output.append(attrs.get(value, default_value))
                     elif type == '-o':
-                        output += value
-                sys.stdout.write(output.encode("utf8"))
+                        output.append(value)
+                sys.stdout.write(''.join(output).encode("utf8"))
 
             for item in function_dict:
                 if isinstance(item, basestring):
@@ -95,7 +95,7 @@ def class_for_function(start_functions, end_functions):
                 # a list of unicode strings and item might be a tuple of
                 # strings
                 if all(possible_match[i] == item[i] for i in range(length)):
-                    output = ""
+                    output = []
                     for option in function_dict[item]:
                         if len(option) == 2:
                             type, value = option
@@ -103,7 +103,7 @@ def class_for_function(start_functions, end_functions):
                             type, value, default_value = option
                         
                         if type == '-o':
-                            output += value
+                            output.append(value)
                         elif type in ('-v', '-V'):
                             attrs_dict = None
                             parts = value.split("/")
@@ -117,13 +117,13 @@ def class_for_function(start_functions, end_functions):
 
 
                             if type == '-v':
-                                output += attrs_dict[value]
+                                output.append(attrs_dict[value])
                             elif type == '-V':
-                                output += attrs_dict.get(value, default_value)
+                                output.append(attrs_dict.get(value, default_value))
                             
                         elif type == '-o':
-                            output += value
-                    sys.stdout.write(output.encode("utf8"))
+                            output.append(value)
+                    sys.stdout.write(''.join(output).encode("utf8"))
 
         def startElement(self, name, attrs):
             self.node_stack.append(name)
